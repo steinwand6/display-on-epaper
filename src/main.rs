@@ -3,7 +3,7 @@
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
-    prelude::Point,
+    prelude::{ImageDrawable, Point},
     text::{Baseline, Text, TextStyleBuilder},
     Drawable,
 };
@@ -12,11 +12,14 @@ use epd_waveshare::{
     epd7in5_v2::{Display7in5, Epd7in5},
     prelude::*,
 };
+use image::Rgba;
+use imageproc::drawing::draw_text_mut;
 use linux_embedded_hal::{
     spidev::{self, SpidevOptions},
     sysfs_gpio::Direction,
     Delay, Pin, Spidev,
 };
+use rusttype::{Font, Scale};
 
 fn main() -> Result<(), std::io::Error> {
     // Configure SPI
@@ -69,16 +72,36 @@ fn main() -> Result<(), std::io::Error> {
     let mut display = Display7in5::default();
     display.set_rotation(DisplayRotation::Rotate270);
 
-    display.clear_buffer(Color::Black);
+    // generate image
+    let mut image = image::open("assets/images/tabula_rasa.bmp").unwrap();
+    let font = Vec::from(include_bytes!("../assets/fonts/PlemolJPConsoleNF-Regular.ttf") as &[u8]);
+    let font = Font::try_from_vec(font).unwrap();
 
-    draw_text(&mut display, "hello world!", 100, 100);
-    epd.update_and_display_frame(&mut spi, display.buffer(), &mut delay)
-        .unwrap();
+    let font_size = 30.0;
+    let scale = Scale {
+        x: font_size,
+        y: font_size,
+    };
+
+    let text = "テスト。こんばんは世界!";
+    draw_text_mut(&mut image, Rgba([0, 0, 0, 0]), 20, 50, scale, &font, text);
+
+    let generate_file = "assets/images/task.bmp";
+    if image.save(generate_file).is_ok() {
+        let bmp_data = include_bytes!("../assets/images/task.bmp");
+        let bmp = tinybmp::Bmp::from_slice(bmp_data).unwrap();
+
+        display.clear_buffer(Color::Black);
+        bmp.draw(&mut display).unwrap();
+
+        epd.update_and_display_frame(&mut spi, display.buffer(), &mut delay)
+            .unwrap();
+    }
 
     Ok(())
 }
 
-fn draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
+fn _draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
     let style = MonoTextStyleBuilder::new()
         .font(&embedded_graphics::mono_font::jis_x0201::FONT_10X20)
         .background_color(BinaryColor::On)
