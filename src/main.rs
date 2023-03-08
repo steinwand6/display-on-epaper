@@ -1,5 +1,4 @@
 #![deny(warnings)]
-
 use std::{
     fs::File,
     io::{BufRead, BufReader, Read},
@@ -13,20 +12,18 @@ use embedded_graphics::{
     Drawable,
 };
 
-use epd_waveshare::{
-    epd7in5_v2::{Display7in5, Epd7in5},
-    prelude::*,
-};
+use epd_waveshare::{epd7in5_v2::Display7in5, prelude::*};
 use image::{DynamicImage, Rgba};
 use imageproc::drawing::draw_text_mut;
 
 use linux_embedded_hal::{
     spidev::{self, SpidevOptions},
-    sysfs_gpio::Direction,
-    Delay, Pin, Spidev, SysfsPin,
+    Delay, Spidev,
 };
 use rusttype::{Font, Scale};
 use tinybmp::Bmp;
+
+mod epd;
 
 struct FontSetting<'a> {
     font: Font<'a>,
@@ -47,7 +44,7 @@ fn main() -> Result<(), std::io::Error> {
     // Configure Delay
     let mut delay = Delay {};
 
-    let mut epd = get_epd(&mut spi, &mut delay).unwrap();
+    let mut epd = epd::get_epd(&mut spi, &mut delay).unwrap();
 
     let mut display = Display7in5::default();
     display.clear_buffer(Color::Black);
@@ -131,47 +128,4 @@ fn _draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
     Text::with_text_style(text, Point::new(x, y), style, text_style)
         .draw(display)
         .unwrap();
-}
-
-fn get_epd(
-    spi: &mut Spidev,
-    delay: &mut Delay,
-) -> Result<
-    Epd7in5<Spidev, SysfsPin, SysfsPin, SysfsPin, SysfsPin, Delay>,
-    Box<dyn std::error::Error>,
-> {
-    // Configure Digital I/O Pin to be used as Chip Select for SPI
-    let cs_pin = Pin::new(26);
-    cs_pin.export().expect("cs_pin export");
-    while !cs_pin.is_exported() {}
-    cs_pin
-        .set_direction(Direction::Out)
-        .expect("cs_pin Direction");
-    cs_pin.set_value(1).expect("cs_pin Value set to 1");
-
-    // Configure Busy Input Pin
-    let busy = Pin::new(24);
-    busy.export().expect("busy export");
-    while !busy.is_exported() {}
-    busy.set_direction(Direction::In).expect("busy Direction");
-    //busy.set_value(1).expect("busy Value set to 1");
-
-    // Configure Data/Command OutputPin
-    let dc = Pin::new(25);
-    dc.export().expect("dc export");
-    while !dc.is_exported() {}
-    dc.set_direction(Direction::Out).expect("dc Direction");
-    dc.set_value(1).expect("dc Value set to 1");
-
-    // Configure Reset OutputPin
-    let rst = Pin::new(17); //pin 36 //bcm16
-    rst.export().expect("rst export");
-    while !rst.is_exported() {}
-    rst.set_direction(Direction::Out).expect("rst Direction");
-    rst.set_value(1).expect("rst Value set to 1");
-
-    // Setup of the needed pins is finished here
-    // Now the "real" usage of the eink-waveshare-rs crate begins
-    let epd = Epd7in5::new(spi, cs_pin, busy, dc, rst, delay)?;
-    Ok(epd)
 }
