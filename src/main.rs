@@ -2,7 +2,7 @@
 
 use std::{
     fs::File,
-    io::{BufReader, Read},
+    io::{BufRead, BufReader, Read},
 };
 
 use embedded_graphics::{
@@ -53,12 +53,24 @@ fn main() -> Result<(), std::io::Error> {
     let font = Vec::from(include_bytes!("../assets/fonts/PlemolJPConsoleNF-Regular.ttf") as &[u8]);
     let font = Font::try_from_vec(font).unwrap();
 
-    let texts = ["test", "hello world!", "こんばんは、世界!!"];
-    let x = 20;
-    let mut y = 50;
-    for text in texts {
-        draw_normal_text_on_image(&mut image, x, y, text, &font);
-        y += 50;
+    // get tasks
+    let mut tasks = Vec::new();
+    let task_list = File::open("task.org").unwrap();
+    let reader = BufReader::new(task_list);
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if line.contains(" TODO ") {
+            let line = line.replace(" TODO ", "").replace("*", " ");
+            tasks.push(line);
+        }
+    }
+
+    //let texts = ["test", "hello world!", "こんばんは、世界!!"];
+    let x = 5;
+    let mut y = 10;
+    for text in tasks {
+        draw_normal_text_on_image(&mut image, x, y, text.as_str(), &font);
+        y += 35;
     }
 
     let bmp_file = "assets/images/task.bmp";
