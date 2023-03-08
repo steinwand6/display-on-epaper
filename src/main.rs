@@ -16,10 +16,6 @@ use epd_waveshare::{epd7in5_v2::Display7in5, prelude::*};
 use image::{DynamicImage, Rgba};
 use imageproc::drawing::draw_text_mut;
 
-use linux_embedded_hal::{
-    spidev::{self, SpidevOptions},
-    Delay, Spidev,
-};
 use rusttype::{Font, Scale};
 use tinybmp::Bmp;
 
@@ -31,24 +27,8 @@ struct FontSetting<'a> {
 }
 
 fn main() -> Result<(), std::io::Error> {
-    // Configure SPI
-    // SPI settings are from eink-waveshare-rs documenation
-    let mut spi = Spidev::open("/dev/spidev0.0")?;
-    let options = SpidevOptions::new()
-        .bits_per_word(8)
-        .max_speed_hz(4_000_000)
-        .mode(spidev::SpiModeFlags::SPI_MODE_0)
-        .build();
-    spi.configure(&options).expect("spi configuration");
-
-    // Configure Delay
-    let mut delay = Delay {};
-
-    let mut epd = epd::get_epd(&mut spi, &mut delay).unwrap();
-
-    let mut display = Display7in5::default();
-    display.clear_buffer(Color::Black);
-    display.set_rotation(DisplayRotation::Rotate270);
+    let (mut epd, mut spi, mut delay) = epd::get_epd().unwrap();
+    let mut display = init_display();
 
     // generate image
     let mut image = image::open("assets/images/tabula_rasa.bmp").unwrap();
@@ -96,6 +76,13 @@ fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
+fn init_display() -> Display7in5 {
+    let mut display = Display7in5::default();
+    display.clear_buffer(Color::Black);
+    display.set_rotation(DisplayRotation::Rotate270);
+    display
+}
+
 fn draw_text_on_image(
     image: &mut DynamicImage,
     x: i32,
@@ -118,7 +105,8 @@ fn draw_text_on_image(
     );
 }
 
-fn _draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
+#[allow(unused)]
+fn draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
     let style = MonoTextStyleBuilder::new()
         .font(&embedded_graphics::mono_font::jis_x0201::FONT_10X20)
         .background_color(BinaryColor::On)

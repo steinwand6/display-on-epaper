@@ -1,14 +1,29 @@
 use epd_waveshare::{epd7in5_v2::Epd7in5, prelude::*};
+use linux_embedded_hal::spidev::{self, SpidevOptions};
 
 use linux_embedded_hal::{sysfs_gpio::Direction, Delay, Pin, Spidev, SysfsPin};
 
-pub fn get_epd(
-    spi: &mut Spidev,
-    delay: &mut Delay,
-) -> Result<
-    Epd7in5<Spidev, SysfsPin, SysfsPin, SysfsPin, SysfsPin, Delay>,
+pub fn get_epd() -> Result<
+    (
+        Epd7in5<Spidev, SysfsPin, SysfsPin, SysfsPin, SysfsPin, Delay>,
+        Spidev,
+        Delay,
+    ),
     Box<dyn std::error::Error>,
 > {
+    // Configure SPI
+    // SPI settings are from eink-waveshare-rs documenation
+    let mut spi = Spidev::open("/dev/spidev0.0")?;
+    let options = SpidevOptions::new()
+        .bits_per_word(8)
+        .max_speed_hz(4_000_000)
+        .mode(spidev::SpiModeFlags::SPI_MODE_0)
+        .build();
+    spi.configure(&options).expect("spi configuration");
+
+    // Configure Delay
+    let mut delay = Delay {};
+
     // Configure Digital I/O Pin to be used as Chip Select for SPI
     let cs_pin = Pin::new(26);
     cs_pin.export().expect("cs_pin export");
@@ -41,6 +56,6 @@ pub fn get_epd(
 
     // Setup of the needed pins is finished here
     // Now the "real" usage of the eink-waveshare-rs crate begins
-    let epd = Epd7in5::new(spi, cs_pin, busy, dc, rst, delay)?;
-    Ok(epd)
+    let epd = Epd7in5::new(&mut spi, cs_pin, busy, dc, rst, &mut delay)?;
+    Ok((epd, spi, delay))
 }
