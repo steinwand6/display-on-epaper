@@ -1,5 +1,10 @@
 #![deny(warnings)]
 
+use std::{
+    fs::File,
+    io::{BufReader, Read},
+};
+
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
@@ -12,7 +17,7 @@ use epd_waveshare::{
     epd7in5_v2::{Display7in5, Epd7in5},
     prelude::*,
 };
-use image::Rgba;
+use image::{DynamicImage, Rgba};
 use imageproc::drawing::draw_text_mut;
 use linux_embedded_hal::{
     spidev::{self, SpidevOptions},
@@ -20,6 +25,7 @@ use linux_embedded_hal::{
     Delay, Pin, Spidev,
 };
 use rusttype::{Font, Scale};
+use tinybmp::Bmp;
 
 fn main() -> Result<(), std::io::Error> {
     // Configure SPI
@@ -70,6 +76,7 @@ fn main() -> Result<(), std::io::Error> {
     let mut epd = Epd7in5::new(&mut spi, cs_pin, busy, dc, rst, &mut delay)?;
 
     let mut display = Display7in5::default();
+    display.clear_buffer(Color::Black);
     display.set_rotation(DisplayRotation::Rotate270);
 
     // generate image
@@ -77,21 +84,23 @@ fn main() -> Result<(), std::io::Error> {
     let font = Vec::from(include_bytes!("../assets/fonts/PlemolJPConsoleNF-Regular.ttf") as &[u8]);
     let font = Font::try_from_vec(font).unwrap();
 
-    let font_size = 30.0;
-    let scale = Scale {
-        x: font_size,
-        y: font_size,
-    };
+    let texts = ["test", "hello world!", "こんばんは、世界!!"];
+    let x = 20;
+    let mut y = 50;
+    for text in texts {
+        draw_normal_text_on_image(&mut image, x, y, text, &font);
+        y += 50;
+    }
 
-    let text = "テスト。こんばんは世界!";
-    draw_text_mut(&mut image, Rgba([0, 0, 0, 0]), 20, 50, scale, &font, text);
+    let bmp_file = "assets/images/task.bmp";
+    if image.save(bmp_file).is_ok() {
+        let bmp_file = File::open(bmp_file).unwrap();
+        let mut reader = BufReader::new(bmp_file);
+        let mut buffer = Vec::new();
 
-    let generate_file = "assets/images/task.bmp";
-    if image.save(generate_file).is_ok() {
-        let bmp_data = include_bytes!("../assets/images/task.bmp");
-        let bmp = tinybmp::Bmp::from_slice(bmp_data).unwrap();
+        reader.read_to_end(&mut buffer).unwrap();
+        let bmp = Bmp::from_slice(buffer.as_slice()).unwrap();
 
-        display.clear_buffer(Color::Black);
         bmp.draw(&mut display).unwrap();
 
         epd.update_and_display_frame(&mut spi, display.buffer(), &mut delay)
@@ -99,6 +108,15 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     Ok(())
+}
+
+fn draw_normal_text_on_image(image: &mut DynamicImage, x: i32, y: i32, text: &str, font: &Font) {
+    let font_size = 30.0;
+    let scale = Scale {
+        x: font_size,
+        y: font_size,
+    };
+    draw_text_mut(image, Rgba([0, 0, 0, 0]), x, y, scale, &font, text);
 }
 
 fn _draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
