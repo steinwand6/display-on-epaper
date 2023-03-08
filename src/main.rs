@@ -28,6 +28,11 @@ use linux_embedded_hal::{
 use rusttype::{Font, Scale};
 use tinybmp::Bmp;
 
+struct FontSetting<'a> {
+    font: Font<'a>,
+    scale: (f32, f32),
+}
+
 fn main() -> Result<(), std::io::Error> {
     // Configure SPI
     // SPI settings are from eink-waveshare-rs documenation
@@ -52,6 +57,10 @@ fn main() -> Result<(), std::io::Error> {
     let mut image = image::open("assets/images/tabula_rasa.bmp").unwrap();
     let font = Vec::from(include_bytes!("../assets/fonts/PlemolJPConsoleNF-Regular.ttf") as &[u8]);
     let font = Font::try_from_vec(font).unwrap();
+    let font_setting = FontSetting {
+        font,
+        scale: (30.0, 30.0),
+    };
 
     // get tasks
     let mut tasks = Vec::new();
@@ -65,11 +74,10 @@ fn main() -> Result<(), std::io::Error> {
         }
     }
 
-    //let texts = ["test", "hello world!", "こんばんは、世界!!"];
     let x = 5;
     let mut y = 10;
     for text in tasks {
-        draw_normal_text_on_image(&mut image, x, y, text.as_str(), &font);
+        draw_text_on_image(&mut image, x, y, text.as_str(), &font_setting);
         y += 35;
     }
 
@@ -91,13 +99,26 @@ fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn draw_normal_text_on_image(image: &mut DynamicImage, x: i32, y: i32, text: &str, font: &Font) {
-    let font_size = 30.0;
+fn draw_text_on_image(
+    image: &mut DynamicImage,
+    x: i32,
+    y: i32,
+    text: &str,
+    font_setting: &FontSetting,
+) {
     let scale = Scale {
-        x: font_size,
-        y: font_size,
+        x: font_setting.scale.0,
+        y: font_setting.scale.1,
     };
-    draw_text_mut(image, Rgba([0, 0, 0, 0]), x, y, scale, &font, text);
+    draw_text_mut(
+        image,
+        Rgba([0, 0, 0, 0]),
+        x,
+        y,
+        scale,
+        &font_setting.font,
+        text,
+    );
 }
 
 fn _draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
