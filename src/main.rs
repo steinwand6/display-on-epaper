@@ -50,10 +50,13 @@ fn main() -> Result<(), std::io::Error> {
     let mut buffer = Vec::new();
 
     reader.read_to_end(&mut buffer).unwrap();
-    let font = Vec::from(buffer.as_slice());
-    let font = Font::try_from_vec(font).unwrap();
-    let font_setting = FontSetting {
-        font,
+
+    let big_font_setting = FontSetting {
+        font: Font::try_from_vec(Vec::from(buffer.as_slice())).unwrap(),
+        scale: (40.0, 40.0),
+    };
+    let normal_font_setting = FontSetting {
+        font: Font::try_from_vec(Vec::from(buffer.as_slice())).unwrap(),
         scale: (30.0, 30.0),
     };
 
@@ -69,7 +72,7 @@ fn main() -> Result<(), std::io::Error> {
         x,
         y,
         calendar.to_string().as_str(),
-        &font_setting,
+        &big_font_setting,
     );
 
     // get tasks
@@ -84,9 +87,9 @@ fn main() -> Result<(), std::io::Error> {
         }
     }
 
-    let x = 5;
-    let y = 50;
-    draw_texts_on_image(&mut image, x, y, tasks, &font_setting);
+    let x = 0;
+    let y = 60;
+    draw_texts_on_image(&mut image, x, y, tasks, &normal_font_setting);
 
     if image.save(&config.display_image_path).is_ok() {
         let bmp_file = File::open(&config.display_image_path).unwrap();
