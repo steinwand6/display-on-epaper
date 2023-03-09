@@ -15,6 +15,7 @@ use embedded_graphics::{
 use epd_waveshare::{epd7in5_v2::Display7in5, prelude::*};
 use image::{DynamicImage, Rgba};
 use imageproc::drawing::draw_text_mut;
+use serde::{Deserialize, Serialize};
 
 use rusttype::{Font, Scale};
 use tinybmp::Bmp;
@@ -26,13 +27,29 @@ struct FontSetting<'a> {
     scale: (f32, f32),
 }
 
+#[derive(Serialize, Deserialize)]
+struct Config {
+    template_path: String,
+    display_image_path: String,
+    ttf_path: String,
+    task_file_path: String,
+}
+
 fn main() -> Result<(), std::io::Error> {
     let (mut epd, mut spi, mut delay) = epd::get_epd().unwrap();
     let mut display = init_display();
 
+    let config = include_str!("../config.toml");
+    let config: Config = toml::from_str(config).unwrap();
+
     // generate image
-    let mut image = image::open("assets/images/tabula_rasa.bmp").unwrap();
-    let font = Vec::from(include_bytes!("../assets/fonts/PlemolJPConsoleNF-Regular.ttf") as &[u8]);
+    let mut image = image::open(&config.template_path).unwrap();
+    let f = File::open(&config.ttf_path).unwrap();
+    let mut reader = BufReader::new(f);
+    let mut buffer = Vec::new();
+
+    reader.read_to_end(&mut buffer).unwrap();
+    let font = Vec::from(buffer.as_slice());
     let font = Font::try_from_vec(font).unwrap();
     let font_setting = FontSetting {
         font,
@@ -41,7 +58,7 @@ fn main() -> Result<(), std::io::Error> {
 
     // get tasks
     let mut tasks = Vec::new();
-    let task_list = File::open("task.org").unwrap();
+    let task_list = File::open(&config.task_file_path).unwrap();
     let reader = BufReader::new(task_list);
     for line in reader.lines() {
         let line = line.unwrap();
@@ -55,9 +72,8 @@ fn main() -> Result<(), std::io::Error> {
     let y = 10;
     draw_texts_on_image(&mut image, x, y, tasks, &font_setting);
 
-    let bmp_file = "assets/images/task.bmp";
-    if image.save(bmp_file).is_ok() {
-        let bmp_file = File::open(bmp_file).unwrap();
+    if image.save(&config.display_image_path).is_ok() {
+        let bmp_file = File::open(&config.display_image_path).unwrap();
         let mut reader = BufReader::new(bmp_file);
         let mut buffer = Vec::new();
 
