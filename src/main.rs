@@ -4,6 +4,7 @@ use std::{
     io::{BufRead, BufReader, Read},
 };
 
+use chrono::{Local, Timelike};
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
@@ -56,6 +57,21 @@ fn main() -> Result<(), std::io::Error> {
         scale: (30.0, 30.0),
     };
 
+    let now = Local::now();
+    let (is_pm, hour) = now.hour12();
+    let calendar = now.format("%Y/%m/%d").to_string() + "  " + hour.to_string().as_str();
+    let calendar = calendar + if is_pm { "PM" } else { "AM" };
+
+    let x = 5;
+    let y = 10;
+    draw_text_on_image(
+        &mut image,
+        x,
+        y,
+        calendar.to_string().as_str(),
+        &font_setting,
+    );
+
     // get tasks
     let mut tasks = Vec::new();
     let task_list = File::open(&config.task_file_path).unwrap();
@@ -69,7 +85,7 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     let x = 5;
-    let y = 10;
+    let y = 50;
     draw_texts_on_image(&mut image, x, y, tasks, &font_setting);
 
     if image.save(&config.display_image_path).is_ok() {
