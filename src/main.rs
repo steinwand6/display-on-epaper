@@ -52,11 +52,8 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     let x = 5;
-    let mut y = 10;
-    for text in tasks {
-        draw_text_on_image(&mut image, x, y, text.as_str(), &font_setting);
-        y += 35;
-    }
+    let y = 10;
+    draw_texts_on_image(&mut image, x, y, tasks, &font_setting);
 
     let bmp_file = "assets/images/task.bmp";
     if image.save(bmp_file).is_ok() {
@@ -74,6 +71,19 @@ fn main() -> Result<(), std::io::Error> {
     }
 
     Ok(())
+}
+
+fn draw_texts_on_image(
+    image: &mut DynamicImage,
+    x: i32,
+    mut y: i32,
+    texts: Vec<String>,
+    font: &FontSetting,
+) {
+    for text in texts {
+        draw_text_on_image(image, x, y, text.as_str(), &font);
+        y += font.scale.1 as i32;
+    }
 }
 
 fn init_display() -> Display7in5 {
