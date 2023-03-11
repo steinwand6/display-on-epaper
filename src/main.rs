@@ -4,16 +4,13 @@ use std::{
     io::{BufReader, Read},
 };
 
-use chrono::{Local, Timelike};
 use embedded_graphics::prelude::ImageDrawable;
-
 use epd_waveshare::{epd7in5_v2::Display7in5, prelude::*};
-
-use serde::{Deserialize, Serialize};
-
 use rusttype::Font;
+use serde::{Deserialize, Serialize};
 use tinybmp::Bmp;
 
+mod calendar;
 mod epd;
 mod todos;
 mod utils;
@@ -57,19 +54,9 @@ fn main() -> Result<(), std::io::Error> {
     };
 
     // draw calendar
-    let now = Local::now();
-    let (is_pm, hour) = now.hour12();
-    let calendar = now.format("%Y/%m/%d").to_string() + "  " + hour.to_string().as_str();
-    let calendar = calendar + if is_pm { "PM" } else { "AM" };
     let x = 5;
     let y = 10;
-    utils::draw_text_on_image(
-        &mut image,
-        x,
-        y,
-        calendar.to_string().as_str(),
-        &big_font_setting,
-    );
+    calendar::draw_calendar(&mut image, &big_font_setting, x, y);
 
     // draw tasks
     let x = 0;
