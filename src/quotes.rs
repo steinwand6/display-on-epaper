@@ -25,7 +25,8 @@ fn get_quotes(file_path: &str) -> Vec<Quote> {
 fn get_quote(file_path: &str) -> Vec<String> {
     let quotes = get_quotes(file_path);
     let quote = quotes.choose(&mut thread_rng()).unwrap();
-    quote.quote.split("\\n").map(|q| q.into()).collect()
+    let quote = "“".to_string() + quote.quote.as_str() + "“";
+    quote.split("\\n").map(|q| q.into()).collect()
 }
 
 pub fn draw_quote(
