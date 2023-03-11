@@ -7,6 +7,7 @@ mod calendar;
 mod config;
 mod epd;
 mod font_setting;
+mod quotes;
 mod todos;
 mod utils;
 
@@ -26,6 +27,7 @@ fn main() -> Result<(), std::io::Error> {
     // get font settings
     let big_font_setting = FontSetting::new(config.get_ttf(), 40.0);
     let normal_font_setting = FontSetting::new(config.get_ttf(), 30.0);
+    let quote_font_setting = FontSetting::new(config.get_ttf_for_quote(), 28.0);
 
     // draw calendar
     let x = 5;
@@ -34,11 +36,22 @@ fn main() -> Result<(), std::io::Error> {
 
     // draw tasks
     let x = 0;
-    let y = 60;
+    let y = 70;
     todos::draw_todotasks(
         &mut image,
         config.get_task_file(),
         &normal_font_setting,
+        x,
+        y,
+    );
+
+    // draw quote
+    let x = 10;
+    let y = 680;
+    quotes::draw_quote(
+        &mut image,
+        &config.get_quotes_file(),
+        &quote_font_setting,
         x,
         y,
     );
