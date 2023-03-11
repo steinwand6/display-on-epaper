@@ -43,10 +43,13 @@ fn get_todotasks(task_file_path: &str) -> Vec<String> {
     tasks
 }
 
-pub fn draw_todotasks(image: &mut DynamicImage, task_file_path: &str, font_setting: &FontSetting) {
-    let x = 0;
-    let y = 60;
-
+pub fn draw_todotasks(
+    image: &mut DynamicImage,
+    task_file_path: &str,
+    font_setting: &FontSetting,
+    x: i32,
+    y: i32,
+) {
     let todotasks = get_todotasks(task_file_path);
     utils::draw_texts_on_image(image, x, y, todotasks, font_setting);
 }
