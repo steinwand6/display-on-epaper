@@ -5,7 +5,6 @@ use std::{
 };
 
 use chrono::{Local, Timelike};
-use display_tasks::get_tasks;
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
@@ -22,8 +21,8 @@ use serde::{Deserialize, Serialize};
 use rusttype::{Font, Scale};
 use tinybmp::Bmp;
 
-mod display_tasks;
 mod epd;
+mod todos;
 
 pub struct FontSetting<'a> {
     font: Font<'a>,
@@ -78,7 +77,7 @@ fn main() -> Result<(), std::io::Error> {
     );
 
     // get tasks
-    let tasks = get_tasks(&config.task_file_path);
+    let tasks = todos::get_todos(&config.task_file_path);
 
     let x = 0;
     let y = 60;
