@@ -37,6 +37,6 @@ impl Config {
     }
 
     pub fn get_ttf_for_quote(&self) -> &str {
-        &self.quotes_file_path
+        &self.ttf_for_quote_path
     }
 }
