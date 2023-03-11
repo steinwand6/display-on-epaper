@@ -47,9 +47,7 @@ fn main() -> Result<(), std::io::Error> {
     if image.save(config.get_diplay_image()).is_ok() {
         let image_data = utils::get_bytes_from_filepath(config.get_diplay_image());
         let bmp = Bmp::from_slice(&image_data.as_slice()).unwrap();
-
         bmp.draw(&mut display).unwrap();
-
         epd.update_and_display_frame(&mut spi, display.buffer(), &mut delay)
             .unwrap();
     }
