@@ -1,3 +1,8 @@
+use std::{
+    fs::File,
+    io::{BufReader, Read},
+};
+
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
@@ -10,7 +15,7 @@ use image::{DynamicImage, Rgba};
 use imageproc::drawing::draw_text_mut;
 use rusttype::Scale;
 
-use crate::FontSetting;
+use crate::font_setting::FontSetting;
 
 pub fn draw_texts_on_image(
     image: &mut DynamicImage,
@@ -21,7 +26,7 @@ pub fn draw_texts_on_image(
 ) {
     for text in texts {
         draw_text_on_image(image, x, y, text.as_str(), &font);
-        y += font.scale.1 as i32;
+        y += font.get_scale().1 as i32
     }
 }
 
@@ -32,9 +37,10 @@ pub fn draw_text_on_image(
     text: &str,
     font_setting: &FontSetting,
 ) {
+    let (scale_x, scale_y) = font_setting.get_scale();
     let scale = Scale {
-        x: font_setting.scale.0,
-        y: font_setting.scale.1,
+        x: scale_x,
+        y: scale_y,
     };
     draw_text_mut(
         image,
@@ -42,7 +48,7 @@ pub fn draw_text_on_image(
         x,
         y,
         scale,
-        &font_setting.font,
+        font_setting.get_font(),
         text,
     );
 }
@@ -58,4 +64,14 @@ pub fn draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
     Text::with_text_style(text, Point::new(x, y), style, text_style)
         .draw(display)
         .unwrap();
+}
+
+pub fn get_bytes_from_filepath(path: &str) -> Vec<u8> {
+    let bmp_file = File::open(path).unwrap();
+    let mut reader = BufReader::new(bmp_file);
+
+    let mut buffer = Vec::new();
+
+    reader.read_to_end(&mut buffer).unwrap();
+    buffer
 }
