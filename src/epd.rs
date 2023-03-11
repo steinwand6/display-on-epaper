@@ -1,7 +1,12 @@
-use epd_waveshare::{epd7in5_v2::Epd7in5, prelude::*};
-use linux_embedded_hal::spidev::{self, SpidevOptions};
-
-use linux_embedded_hal::{sysfs_gpio::Direction, Delay, Pin, Spidev, SysfsPin};
+use epd_waveshare::{
+    epd7in5_v2::{Display7in5, Epd7in5},
+    prelude::*,
+};
+use linux_embedded_hal::{
+    spidev::{self, SpidevOptions},
+    sysfs_gpio::Direction,
+    Delay, Pin, Spidev, SysfsPin,
+};
 
 pub fn get_epd() -> Result<
     (
@@ -58,4 +63,11 @@ pub fn get_epd() -> Result<
     // Now the "real" usage of the eink-waveshare-rs crate begins
     let epd = Epd7in5::new(&mut spi, cs_pin, busy, dc, rst, &mut delay)?;
     Ok((epd, spi, delay))
+}
+
+pub fn init_display() -> Display7in5 {
+    let mut display = Display7in5::default();
+    display.clear_buffer(Color::Black);
+    display.set_rotation(DisplayRotation::Rotate270);
+    display
 }

@@ -1,8 +1,8 @@
 use chrono::{Local, Timelike};
 use image::DynamicImage;
 
+use crate::font_setting::FontSetting;
 use crate::utils;
-use crate::FontSetting;
 
 pub fn draw_calendar(image: &mut DynamicImage, font_setting: &FontSetting, x: i32, y: i32) {
     let now = Local::now();

@@ -6,8 +6,8 @@ use std::{
 use image::DynamicImage;
 use regex::Regex;
 
+use crate::font_setting::FontSetting;
 use crate::utils;
-use crate::FontSetting;
 
 fn get_todotasks(task_file_path: &str) -> Vec<String> {
     let mut tasks = Vec::new();

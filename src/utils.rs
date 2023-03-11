@@ -10,7 +10,7 @@ use image::{DynamicImage, Rgba};
 use imageproc::drawing::draw_text_mut;
 use rusttype::Scale;
 
-use crate::FontSetting;
+use crate::font_setting::FontSetting;
 
 pub fn draw_texts_on_image(
     image: &mut DynamicImage,
@@ -21,7 +21,7 @@ pub fn draw_texts_on_image(
 ) {
     for text in texts {
         draw_text_on_image(image, x, y, text.as_str(), &font);
-        y += font.scale.1 as i32;
+        y += font.get_scale().1 as i32
     }
 }
 
@@ -32,9 +32,10 @@ pub fn draw_text_on_image(
     text: &str,
     font_setting: &FontSetting,
 ) {
+    let (scale_x, scale_y) = font_setting.get_scale();
     let scale = Scale {
-        x: font_setting.scale.0,
-        y: font_setting.scale.1,
+        x: scale_x,
+        y: scale_y,
     };
     draw_text_mut(
         image,
@@ -42,7 +43,7 @@ pub fn draw_text_on_image(
         x,
         y,
         scale,
-        &font_setting.font,
+        font_setting.get_font(),
         text,
     );
 }
