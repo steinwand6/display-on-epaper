@@ -1,9 +1,4 @@
 #![deny(warnings)]
-use std::{
-    fs::File,
-    io::{BufReader, Read},
-};
-
 use embedded_graphics::prelude::ImageDrawable;
 use epd_waveshare::prelude::*;
 use tinybmp::Bmp;
@@ -25,7 +20,7 @@ fn main() -> Result<(), std::io::Error> {
     // get config
     let config = Config::get_config();
 
-    // generate image
+    // get template image
     let mut image = image::open(config.get_template()).unwrap();
 
     // get font settings
@@ -50,12 +45,8 @@ fn main() -> Result<(), std::io::Error> {
 
     // display
     if image.save(config.get_diplay_image()).is_ok() {
-        let bmp_file = File::open(config.get_diplay_image()).unwrap();
-        let mut reader = BufReader::new(bmp_file);
-        let mut buffer = Vec::new();
-
-        reader.read_to_end(&mut buffer).unwrap();
-        let bmp = Bmp::from_slice(buffer.as_slice()).unwrap();
+        let image_data = utils::get_bytes_from_filepath(config.get_diplay_image());
+        let bmp = Bmp::from_slice(&image_data.as_slice()).unwrap();
 
         bmp.draw(&mut display).unwrap();
 

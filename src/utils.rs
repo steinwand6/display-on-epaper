@@ -1,3 +1,8 @@
+use std::{
+    fs::File,
+    io::{BufReader, Read},
+};
+
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
@@ -59,4 +64,14 @@ pub fn draw_text(display: &mut Display7in5, text: &str, x: i32, y: i32) {
     Text::with_text_style(text, Point::new(x, y), style, text_style)
         .draw(display)
         .unwrap();
+}
+
+pub fn get_bytes_from_filepath(path: &str) -> Vec<u8> {
+    let bmp_file = File::open(path).unwrap();
+    let mut reader = BufReader::new(bmp_file);
+
+    let mut buffer = Vec::new();
+
+    reader.read_to_end(&mut buffer).unwrap();
+    buffer
 }
