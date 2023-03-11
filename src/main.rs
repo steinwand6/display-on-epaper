@@ -1,10 +1,11 @@
 #![deny(warnings)]
 use std::{
     fs::File,
-    io::{BufRead, BufReader, Read},
+    io::{BufReader, Read},
 };
 
 use chrono::{Local, Timelike};
+use display_tasks::get_tasks;
 use embedded_graphics::{
     mono_font::MonoTextStyleBuilder,
     pixelcolor::BinaryColor,
@@ -21,9 +22,10 @@ use serde::{Deserialize, Serialize};
 use rusttype::{Font, Scale};
 use tinybmp::Bmp;
 
+mod display_tasks;
 mod epd;
 
-struct FontSetting<'a> {
+pub struct FontSetting<'a> {
     font: Font<'a>,
     scale: (f32, f32),
 }
@@ -76,16 +78,7 @@ fn main() -> Result<(), std::io::Error> {
     );
 
     // get tasks
-    let mut tasks = Vec::new();
-    let task_list = File::open(&config.task_file_path).unwrap();
-    let reader = BufReader::new(task_list);
-    for line in reader.lines() {
-        let line = line.unwrap();
-        if line.contains(" TODO ") {
-            let line = line.replace(" TODO ", "").replace("*", " ");
-            tasks.push(line);
-        }
-    }
+    let tasks = get_tasks(&config.task_file_path);
 
     let x = 0;
     let y = 60;
