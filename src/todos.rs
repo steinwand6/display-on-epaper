@@ -3,9 +3,13 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+use image::DynamicImage;
 use regex::Regex;
 
-pub fn get_todos(task_file_path: &str) -> Vec<String> {
+use crate::utils;
+use crate::FontSetting;
+
+fn get_todotasks(task_file_path: &str) -> Vec<String> {
     let mut tasks = Vec::new();
     let task_list = File::open(task_file_path).unwrap();
     let reader = BufReader::new(task_list);
@@ -37,4 +41,12 @@ pub fn get_todos(task_file_path: &str) -> Vec<String> {
         }
     }
     tasks
+}
+
+pub fn draw_todotasks(image: &mut DynamicImage, task_file_path: &str, font_setting: &FontSetting) {
+    let x = 0;
+    let y = 60;
+
+    let todotasks = get_todotasks(task_file_path);
+    utils::draw_texts_on_image(image, x, y, todotasks, font_setting);
 }
