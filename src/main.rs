@@ -7,6 +7,7 @@ mod calendar;
 mod config;
 mod epd;
 mod font_setting;
+mod quotes;
 mod todos;
 mod utils;
 
@@ -42,6 +43,9 @@ fn main() -> Result<(), std::io::Error> {
         x,
         y,
     );
+
+    // draw quote
+    quotes::display_quote(config.get_quotes_file());
 
     // display
     if image.save(config.get_diplay_image()).is_ok() {

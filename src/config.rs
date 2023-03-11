@@ -6,6 +6,7 @@ pub struct Config {
     display_image_path: String,
     ttf_path: String,
     task_file_path: String,
+    quotes_file_path: String,
 }
 
 impl Config {
@@ -28,5 +29,9 @@ impl Config {
 
     pub fn get_task_file(&self) -> &str {
         &self.task_file_path
+    }
+
+    pub fn get_quotes_file(&self) -> &str {
+        &self.quotes_file_path
     }
 }
