@@ -51,7 +51,6 @@ pub fn draw_quote(
         let line_char_count = line.chars().count();
         let line_size =
             (line_char_count + char_count) * font_setting.get_scale().1 as usize * maltibyte_weight;
-        println!("{line_char_count} {char_count} {line_size}");
         if line_size > crate::WIDTH {
             chunks.push(line);
             chunks.push(" ".to_string() + chunk);
