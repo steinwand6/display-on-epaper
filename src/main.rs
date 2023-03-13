@@ -14,8 +14,7 @@ mod utils;
 use config::Config;
 use font_setting::FontSetting;
 
-const _WIDTH: u32 = 420;
-const _HIGHT: u32 = 800;
+const WIDTH: usize = 960;
 
 fn main() -> Result<(), std::io::Error> {
     let (mut epd, mut spi, mut delay) = epd::get_epd().unwrap();
@@ -47,11 +46,11 @@ fn main() -> Result<(), std::io::Error> {
         x,
         y,
     );
-    let _todo_bottom = y as u32 + count_tasks * normal_font_setting.get_scale().1 as u32;
+    let todo_bottom = y + count_tasks as i32 * normal_font_setting.get_scale().1 as i32;
 
     // draw quote
     let x = 10;
-    let y = 680;
+    let y = todo_bottom + normal_font_setting.get_scale().1 as i32 * 2;
     quotes::draw_quote(
         &mut image,
         &config.get_quotes_file(),
