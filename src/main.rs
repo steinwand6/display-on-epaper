@@ -14,6 +14,9 @@ mod utils;
 use config::Config;
 use font_setting::FontSetting;
 
+const _WIDTH: u32 = 420;
+const _HIGHT: u32 = 800;
+
 fn main() -> Result<(), std::io::Error> {
     let (mut epd, mut spi, mut delay) = epd::get_epd().unwrap();
     let mut display = epd::init_display();
@@ -37,13 +40,14 @@ fn main() -> Result<(), std::io::Error> {
     // draw tasks
     let x = 0;
     let y = 70;
-    todos::draw_todotasks(
+    let count_tasks = todos::draw_todotasks(
         &mut image,
         config.get_task_file(),
         &normal_font_setting,
         x,
         y,
     );
+    let _todo_bottom = y as u32 + count_tasks * normal_font_setting.get_scale().1 as u32;
 
     // draw quote
     let x = 10;

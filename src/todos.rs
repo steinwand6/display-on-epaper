@@ -49,7 +49,9 @@ pub fn draw_todotasks(
     font_setting: &FontSetting,
     x: i32,
     y: i32,
-) {
+) -> u32 {
     let todotasks = get_todotasks(task_file_path);
+    let count_tasks = todotasks.len() as u32;
     utils::draw_texts_on_image(image, x, y, todotasks, font_setting);
+    count_tasks
 }
