@@ -36,7 +36,7 @@ pub fn draw_quote(
     y: i32,
 ) {
     let quote = get_quote(quotes_file_path);
-    let maltibyte_weight = if !quote.chars().all(|c| c.is_ascii()) {
+    let multibyte_weight = if !quote.chars().all(|c| c.is_ascii()) {
         2
     } else {
         1
@@ -50,7 +50,7 @@ pub fn draw_quote(
         let mut line = chunks.pop().unwrap_or("".to_string());
         let line_char_count = line.chars().count();
         let line_size =
-            (line_char_count + char_count) * font_setting.get_scale().1 as usize * maltibyte_weight;
+            (line_char_count + char_count) * font_setting.get_scale().1 as usize * multibyte_weight;
         if line_size > crate::WIDTH {
             chunks.push(line);
             chunks.push(" ".to_string() + chunk);
